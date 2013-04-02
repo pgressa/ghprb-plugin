@@ -5,12 +5,12 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>1.480</version>
+        <version>1.496</version>
     </parent>
 
     <artifactId>ghprb</artifactId>
     <name>Github Pull Request Builder</name>
-    <version>1.5.1</version>
+    <version>1.5.1-GD</version>
     <packaging>hpi</packaging>
 
     <url>https://wiki.jenkins-ci.org/display/JENKINS/GitHub+pull+request+builder+plugin</url>
@@ -20,6 +20,11 @@
             <id>janinko</id>
             <name>Honza Brázdil</name>
             <email>jbrazdil@redhat.com</email>
+        </developer>
+        <developer>
+            <id>rchrom</id>
+            <name>Radek Chromý</name>
+            <email>radek.chromy@gooddata.com</email>
         </developer>
     </developers>
 
@@ -42,7 +47,7 @@
         <dependency>
             <groupId>com.coravy.hudson.plugins.github</groupId>
             <artifactId>github</artifactId>
-            <version>1.4</version>
+            <version>1.5</version>
         </dependency>
         <dependency>
             <groupId>org.kohsuke</groupId>
@@ -61,12 +66,20 @@
 	  <name>Eclipse JGit Repository</name>
 	  <url>http://download.eclipse.org/jgit/maven</url>
 	</repository>
+	<repository>
+        <id>repo.netbeans.org</id>
+        <url>http://bits.netbeans.org/maven2/</url>
+    </repository>	
     </repositories>
 
     <pluginRepositories>
         <pluginRepository>
             <id>repo.jenkins-ci.org</id>
             <url>http://repo.jenkins-ci.org/public/</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>repo.netbeans.org</id>
+            <url>http://bits.netbeans.org/maven2/</url>
         </pluginRepository>
     </pluginRepositories>
 </project>

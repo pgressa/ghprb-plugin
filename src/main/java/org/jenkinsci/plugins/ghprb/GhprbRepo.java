@@ -215,8 +215,8 @@ public class GhprbRepo {
 		return trigger.getDescriptor().getUsername().equals(username);
 	}
 
-	public void startJob(int id, String commit, boolean merged){
-		QueueTaskFuture<?> build = trigger.startJob(new GhprbCause(commit, id, merged));
+	public void startJob(int id, String commit, boolean merged, String targetBranch){
+		QueueTaskFuture<?> build = trigger.startJob(new GhprbCause(commit, id, merged, targetBranch));
 		if(build == null){
 			Logger.getLogger(GhprbRepo.class.getName()).log(Level.SEVERE, "Job didn't started");
 			return;

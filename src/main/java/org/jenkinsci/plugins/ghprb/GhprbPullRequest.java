@@ -17,6 +17,7 @@ public class GhprbPullRequest{
 	private Date updated;
 	private String head;
 	private boolean mergeable;
+	private String targetBranch = "master";
 
 	private boolean shouldRun = false;
 	private boolean accepted = false;
@@ -85,7 +86,7 @@ public class GhprbPullRequest{
 			sb.append(" Build triggered.");
 		}
 
-		repo.startJob(id,head, mergeable);
+		repo.startJob(id,head, mergeable,targetBranch);
 		repo.createCommitStatus(head, GHCommitState.PENDING, null, sb.toString(),id);
 
 		Logger.getLogger(GhprbPullRequest.class.getName()).log(Level.INFO, sb.toString());
@@ -162,6 +163,8 @@ public class GhprbPullRequest{
 	}
 
 	private void checkMergeable(GHPullRequest pr) {
+		targetBranch = pr.getBase().getRef();
+		Logger.getLogger(GhprbPullRequest.class.getName()).log(Level.INFO, "Merge targetBranch:".concat(targetBranch));
 		try {
 			mergeable = pr.getMergeable();
 		} catch (IOException e) {
