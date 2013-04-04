@@ -14,10 +14,8 @@ import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
 import org.kohsuke.github.GHCommitState;
 import org.kohsuke.github.GHIssueState;
-import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHPullRequest;
 import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.GHUser;
 import org.kohsuke.github.GitHub;
 
 /**
@@ -25,11 +23,8 @@ import org.kohsuke.github.GitHub;
  */
 public class GhprbRepo {
 	private final GhprbTrigger trigger;
-	private final Pattern retestPhrasePattern;
-	private final Pattern whitelistPhrasePattern;
 	private final Pattern oktotestPhrasePattern;
 	private final String reponame;
-	private final String requestForTestingMessage;
 	private final String githubServer;
 
 	private final HashSet<GhprbBuild> builds;
@@ -44,27 +39,15 @@ public class GhprbRepo {
 
 		gh = connect();
 
-		retestPhrasePattern = Pattern.compile(trigger.getDescriptor().getRetestPhrase());
-		whitelistPhrasePattern = Pattern.compile(trigger.getDescriptor().getWhitelistPhrase());
 		oktotestPhrasePattern = Pattern.compile(trigger.getDescriptor().getOkToTestPhrase());
-		requestForTestingMessage = trigger.getDescriptor().getRequestForTestingPhrase();
 
 		builds = new HashSet<GhprbBuild>();
 	}
 
 	private GitHub connect(){
 		GitHub gitHub = null;
-		String accessToken = trigger.getDescriptor().getAccessToken();
-		String serverAPIUrl = trigger.getDescriptor().getServerAPIUrl();
-		if(accessToken != null && !accessToken.isEmpty()) {
-			try {
-				gitHub = GitHub.connectUsingOAuth(serverAPIUrl, accessToken);
-			} catch(IOException e) {
-				Logger.getLogger(GhprbRepo.class.getName()).log(Level.SEVERE, "Can't connect to "+serverAPIUrl+" using oauth", e);
-			}
-		} else {
-			gitHub = GitHub.connect(trigger.getDescriptor().getUsername(), null, trigger.getDescriptor().getPassword());
-		}
+		gitHub = GitHub.connect(trigger.getDescriptor().getUsername(), null, trigger.getDescriptor().getPassword());
+
 		return gitHub;
 	}
 
@@ -172,28 +155,8 @@ public class GhprbRepo {
 		return reponame;
 	}
 
-	public boolean isWhitelisted(String username){
-		return trigger.whitelisted.contains(username) || trigger.admins.contains(username) || isInWhitelistedOrganisation(username);
-	}
-
-	public boolean isAdmin(String username){
-		return trigger.admins.contains(username);
-	}
-
-	public boolean isRetestPhrase(String comment){
-		return retestPhrasePattern.matcher(comment).matches();
-	}
-
-	public boolean isWhitelistPhrase(String comment){
-		return whitelistPhrasePattern.matcher(comment).matches();
-	}
-
 	public boolean isOktotestPhrase(String comment){
 		return oktotestPhrasePattern.matcher(comment).matches();
-	}
-
-	public String getDefaultComment() {
-		return requestForTestingMessage;
 	}
 
 	public void addComment(int id, String comment) {
@@ -202,13 +165,6 @@ public class GhprbRepo {
 		} catch (IOException ex) {
 			Logger.getLogger(GhprbRepo.class.getName()).log(Level.SEVERE, "Couldn't add comment to pullrequest #" + id + ": '" + comment + "'", ex);
 		}
-	}
-
-	public void addWhitelist(String author) {
-		Logger.getLogger(GhprbRepo.class.getName()).log(Level.INFO, "Adding {0} to whitelist", author);
-		trigger.whitelist = trigger.whitelist + " " + author;
-		trigger.whitelisted.add(author);
-		trigger.changed = true;
 	}
 
 	public boolean isMe(String username){
@@ -224,32 +180,7 @@ public class GhprbRepo {
 		builds.add(new GhprbBuild(this, id, build, true));
 	}
 
-	public boolean isUserMemberOfOrganization(String organisation, String member){
-		try {
-			GHOrganization org = gh.getOrganization(organisation);
-			List<GHUser> members = org.getMembers();
-			for(GHUser user : members){
-				if(user.getLogin().equals(member)){
-					return true;
-				}
-			}
-		} catch (IOException ex) {
-			Logger.getLogger(GhprbRepo.class.getName()).log(Level.SEVERE, null, ex);
-			return false;
-		}
-		return false;
-	}
-
 	public String getRepoUrl(){
 		return githubServer+"/"+reponame;
-	}
-
-	private boolean isInWhitelistedOrganisation(String username) {
-		for(String organisation : trigger.organisations){
-			if(isUserMemberOfOrganization(organisation,username)){
-				return true;
-			}
-		}
-		return false;
 	}
 }

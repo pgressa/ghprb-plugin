@@ -21,7 +21,6 @@ public class GhprbPullRequest{
 
 	private boolean shouldRun = false;
 	private boolean accepted = false;
-	@Deprecated private transient boolean askedForApproval; // TODO: remove
 
 	private transient GhprbRepo repo;
 
@@ -32,15 +31,8 @@ public class GhprbPullRequest{
 		author = pr.getUser().getLogin();
 
 		repo = ghprbRepo;
-
-		if(repo.isWhitelisted(author)){
-			accepted = true;
-			shouldRun = true;
-		}else{
-			Logger.getLogger(GhprbPullRequest.class.getName()).log(Level.INFO, "Author of #{0} {1} on {2} not in whitelist!", new Object[]{id, author, ghprbRepo.getName()});
-			addComment(repo.getDefaultComment());
-		}
-
+		accepted = true;
+		shouldRun = true;
 		Logger.getLogger(GhprbPullRequest.class.getName()).log(Level.INFO, "Created pull request #{0} on {1} by {2} updated at: {3} SHA: {4}", new Object[]{id, ghprbRepo.getName(), author, updated, head});
 	}
 
@@ -92,10 +84,6 @@ public class GhprbPullRequest{
 		Logger.getLogger(GhprbPullRequest.class.getName()).log(Level.INFO, sb.toString());
 	}
 
-	private void addComment(String comment) {
-		repo.addComment(id,comment);
-	}
-
 	// returns false if no new commit
 	private boolean checkCommit(String sha){
 		if(head.equals(sha)) return false;
@@ -118,29 +106,13 @@ public class GhprbPullRequest{
 		}
 		String body = comment.getBody();
 
-		// add to whitelist
-		if (repo.isWhitelistPhrase(body) && repo.isAdmin(sender)){
-			if(!repo.isWhitelisted(author)) {
-				repo.addWhitelist(author);
-			}
-			accepted = true;
-			shouldRun = true;
-		}
 
 		// ok to test
-		if(repo.isOktotestPhrase(body) && repo.isAdmin(sender)){
+		if(repo.isOktotestPhrase(body)){
 			accepted = true;
 			shouldRun = true;
 		}
 
-		// test this please
-		if (repo.isRetestPhrase(body)){
-			if(repo.isAdmin(sender)){
-				shouldRun = true;
-			}else if(accepted && repo.isWhitelisted(sender) ){
-				shouldRun = true;
-			}
-		}
 	}
 
 	private int checkComments(GHPullRequest pr) {
@@ -164,7 +136,7 @@ public class GhprbPullRequest{
 
 	private void checkMergeable(GHPullRequest pr) {
 		targetBranch = pr.getBase().getRef();
-		Logger.getLogger(GhprbPullRequest.class.getName()).log(Level.INFO, "Merge targetBranch:".concat(targetBranch));
+		Logger.getLogger(GhprbPullRequest.class.getName()).log(Level.INFO, "Merge targetBranch: ".concat(targetBranch));
 		try {
 			mergeable = pr.getMergeable();
 		} catch (IOException e) {
