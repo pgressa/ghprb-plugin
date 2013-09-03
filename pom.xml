@@ -11,7 +11,7 @@
 
 	<artifactId>ghprb</artifactId>
 	<name>Github Pull Request Builder</name>
-	<version>1.5.1-GD</version>
+	<version>1.5.2-GD</version>
 	<packaging>hpi</packaging>
 
 	<url>https://wiki.jenkins-ci.org/display/JENKINS/GitHub+pull+request+builder+plugin</url>

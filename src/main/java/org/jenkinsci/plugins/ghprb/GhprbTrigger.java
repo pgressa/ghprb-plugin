@@ -131,9 +131,10 @@ public final class GhprbTrigger extends Trigger<AbstractProject<?, ?>> {
 	public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
 	public static final class DescriptorImpl extends TriggerDescriptor{
-		//private String serverAPIUrl = "https://api.github.com";
+		private String serverAPIUrl = "https://api.github.com";
 		private String username;
 		private String password;
+		private String accessToken;
 		private String publishedURL;
 		private String okToTestPhrase = ".*ok\\W+to\\W+test.*";
 		private String cron = "*/5 * * * *";
@@ -161,9 +162,10 @@ public final class GhprbTrigger extends Trigger<AbstractProject<?, ?>> {
 
 		@Override
 		public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
-			//serverAPIUrl = formData.getString("serverAPIUrl");
+			serverAPIUrl = formData.getString("serverAPIUrl");
 			username = formData.getString("username");
 			password = formData.getString("password");
+			accessToken = formData.getString("accessToken");
 			publishedURL = formData.getString("publishedURL");
 
 			okToTestPhrase = formData.getString("okToTestPhrase");
@@ -177,11 +179,11 @@ public final class GhprbTrigger extends Trigger<AbstractProject<?, ?>> {
 			return (new TimerTrigger.DescriptorImpl().doCheckSpec(value));
 		}
 
-//		public FormValidation doCheckServerAPIUrl(@QueryParameter String value){
-//			if("https://api.github.com".equals(value)) return FormValidation.ok();
-//			if(value.endsWith("/api/v3")) return FormValidation.ok();
-//			return FormValidation.warning("Github api url is \"https://api.github.com\". Github enterprise api url ends with \"/api/v3\"");
-//		}
+		public FormValidation doCheckServerAPIUrl(@QueryParameter String value){
+			if("https://api.github.com".equals(value)) return FormValidation.ok();
+			if(value.endsWith("/api/v3")) return FormValidation.ok();
+			return FormValidation.warning("Github api url is \"https://api.github.com\". Github enterprise api url ends with \"/api/v3\"");
+		}
 
 		public String getUsername() {
 			return username;
@@ -189,6 +191,10 @@ public final class GhprbTrigger extends Trigger<AbstractProject<?, ?>> {
 
 		public String getPassword() {
 			return password;
+		}
+
+		public String getAccessToken() {
+			return accessToken;
 		}
 
 		public String getPublishedURL() {
@@ -207,9 +213,9 @@ public final class GhprbTrigger extends Trigger<AbstractProject<?, ?>> {
 			return useComments;
 		}
 
-//		public String getServerAPIUrl() {
-//			return serverAPIUrl;
-//		}
+		public String getServerAPIUrl() {
+			return serverAPIUrl;
+		}
 
 		private Map<Integer, GhprbPullRequest> getPullRequests(String projectName) {
 			Map<Integer, GhprbPullRequest> ret;

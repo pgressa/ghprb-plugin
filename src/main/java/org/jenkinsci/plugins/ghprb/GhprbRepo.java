@@ -46,8 +46,17 @@ public class GhprbRepo {
 
 	private GitHub connect(){
 		GitHub gitHub = null;
-		gitHub = GitHub.connect(trigger.getDescriptor().getUsername(), null, trigger.getDescriptor().getPassword());
-
+		String accessToken = trigger.getDescriptor().getAccessToken();
+		String serverAPIUrl = trigger.getDescriptor().getServerAPIUrl();
+		if(accessToken != null && !accessToken.isEmpty()) {
+			try {
+				gitHub = GitHub.connectUsingOAuth(serverAPIUrl, accessToken);
+			} catch(IOException e) {
+				Logger.getLogger(GhprbRepo.class.getName()).log(Level.SEVERE, "Can't connect to "+serverAPIUrl+" using oauth", e);
+			}
+		} else {
+			gitHub = GitHub.connect(trigger.getDescriptor().getUsername(), null, trigger.getDescriptor().getPassword());
+		}
 		return gitHub;
 	}
 
