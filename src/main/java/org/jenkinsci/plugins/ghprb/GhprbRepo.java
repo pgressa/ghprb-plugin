@@ -135,7 +135,7 @@ public class GhprbRepo {
 	public void createCommitStatus(String sha1, GHCommitState state, String url, String message, int id) {
 		Logger.getLogger(GhprbRepo.class.getName()).log(Level.INFO, "Setting status of {0} to {1} with url {2} and message: {3}", new Object[]{sha1, state, url, message});
 		try {
-			repo.createCommitStatus(sha1, state, url, message);
+			repo.getPullRequest(id).getHead().getRepository().createCommitStatus(sha1, state, url, message);
 		} catch (IOException ex) {
 			if(trigger.getDescriptor().getUseComments()){
 				Logger.getLogger(GhprbRepo.class.getName()).log(Level.INFO, "Could not update commit status of the Pull Request on Github. Trying to send comment.", ex);
