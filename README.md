@@ -6,15 +6,7 @@ This plugin builds pull requests from github and reports the results.
 
 https://wiki.jenkins-ci.org/display/JENKINS/GitHub+pull+request+builder+plugin
 
-When a new pull request is opened in the project and the author of the pull
-request isn't whitelisted, builder will ask ``Can one of the
-admins verify this patch?``. One of the admins can comment ``ok to test``
-to accept this pullrequest for testing, ``test this please`` for one time
-test run and ``add to whitelist`` to add the author to the whitelist.
-
-If an author of a pull request is whitelisted, adding a new pull
-request or new commit to an existing pull request will start a new
-build.
+Adding a new pull request or new commit to an existing pull request will start a new build.
 
 A new build can also be started with a comment: ``retest this please``.
 
@@ -40,8 +32,7 @@ git plugin (https://wiki.jenkins-ci.org/display/JENKINS/Git+Plugin)
     * Clear the username and password fields
   * If you don't want to use Access Token leve the field empty and fill the username and password in ``Advanced...``.
 * Add GitHub usernames of admins (these usernames will be used as defaults in new jobs).  
-* Under Advanced, you can modify:  
-  * The phrase for adding users to the whitelist via comment. (Java regexp)  
+* Under Advanced, you can modify:
   * The phrase for accepting a pullrequest for testing. (Java regexp)  
   * The phrase for starting a new build. (Java regexp)  
   * The crontab line. This specify default setting for new jobs.  
@@ -55,12 +46,10 @@ git plugin (https://wiki.jenkins-ci.org/display/JENKINS/Git+Plugin)
 * Under Advanced, set ``refspec`` to ``+refs/pull/*:refs/remotes/origin/pr/*``.  
 * In ``Branch Specifier``, enter ``${sha1}``.  
 * Under ``Build Triggers``, check ``GitHub pull requests builder``.
-  * Add admins for this specific job.  
   * If you want to use GitHub hooks for automatic testing, read the help for ``Use github hooks for build triggering`` in job configuration. Then you can check the checkbox.
   * In Advanced, you can modify:  
     * The crontab line for this specific job. This schedules polling to GitHub for new changes in Pull Requests.  
-    * The whitelisted users for this specific job.  
-    * The organisation names whose members are considered whitelisted for this specific job.  
+
 * Save to preserve your changes.  
 
 Make sure you **DON'T** have ``Prune remote branches before build`` advanced option selected, since it will prune the branch created to test this build.

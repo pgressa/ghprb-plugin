@@ -19,9 +19,6 @@ public class Ghprb {
 	private static final Logger logger = Logger.getLogger(Ghprb.class.getName());
 	private static final Pattern githubUserRepoPattern = Pattern.compile("^(http[s]?://[^/]*)/([^/]*)/([^/]*).*");
 
-	private HashSet<String>       admins;
-	private HashSet<String>       whitelisted;
-	private HashSet<String>       organisations;
 	private String                triggerPhrase;
 	private GhprbTrigger          trigger;
 	private GhprbRepository       repository;
@@ -30,25 +27,15 @@ public class Ghprb {
 	private String                githubServer;
 
 	private boolean checked = false;
-	
-	private final Pattern retestPhrasePattern;
-	private final Pattern whitelistPhrasePattern;
+
 	private final Pattern oktotestPhrasePattern;
 
 	private Ghprb(){
-		retestPhrasePattern = Pattern.compile(GhprbTrigger.getDscp().getRetestPhrase());
-		whitelistPhrasePattern = Pattern.compile(GhprbTrigger.getDscp().getWhitelistPhrase());
 		oktotestPhrasePattern = Pattern.compile(GhprbTrigger.getDscp().getOkToTestPhrase());
 	}
 	
 	public static Builder getBuilder(){
 		return new Builder();
-	}
-
-	public void addWhitelist(String author){
-		logger.log(Level.INFO, "Adding {0} to whitelist", author);
-		whitelisted.add(author);
-		trigger.addWhitelist(author);
 	}
 
 	public GhprbBuilds getBuilds() {
@@ -83,14 +70,6 @@ public class Ghprb {
 		return Jenkins.getInstance().getRootUrl() + GhprbRootAction.URL + "/";
 	}
 
-	public boolean isRetestPhrase(String comment){
-		return retestPhrasePattern.matcher(comment).matches();
-	}
-
-	public boolean isWhitelistPhrase(String comment){
-		return whitelistPhrasePattern.matcher(comment).matches();
-	}
-
 	public boolean isOktotestPhrase(String comment){
 		return oktotestPhrasePattern.matcher(comment).matches();
 	}
@@ -101,26 +80,6 @@ public class Ghprb {
 
 	public boolean ifOnlyTriggerPhrase() {
 		return trigger.getOnlyTriggerPhrase();
-	}
-
-	public boolean isWhitelisted(GHUser user){
-		return trigger.getPermitAll()
-			|| whitelisted.contains(user.getLogin())
-		    || admins.contains(user.getLogin())
-		    || isInWhitelistedOrganisation(user);
-	}
-
-	public boolean isAdmin(String username){
-		return admins.contains(username);
-	}
-
-	private boolean isInWhitelistedOrganisation(GHUser user) {
-		for(String organisation : organisations){
-			if(getGitHub().isUserMemberOfOrganization(organisation,user)){
-				return true;
-			}
-		}
-		return false;
 	}
 
 	String getGitHubServer() {
@@ -140,12 +99,6 @@ public class Ghprb {
 			if(gml == null) return this;
 
 			gml.trigger = trigger;
-			gml.admins = new HashSet<String>(Arrays.asList(trigger.getAdminlist().split("\\s+")));
-			gml.admins.remove("");
-			gml.whitelisted = new HashSet<String>(Arrays.asList(trigger.getWhitelist().split("\\s+")));
-			gml.whitelisted.remove("");
-			gml.organisations = new HashSet<String>(Arrays.asList(trigger.getOrgslist().split("\\s+")));
-			gml.organisations.remove("");
 			gml.triggerPhrase = trigger.getTriggerPhrase();
 
 			return this;

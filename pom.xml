@@ -5,12 +5,12 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>1.480</version>
+        <version>1.509.4</version>
     </parent>
 
     <artifactId>ghprb</artifactId>
     <name>GitHub Pull Request Builder</name>
-    <version>1.10-SNAPSHOT</version>
+    <version>1.10.1-GD-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
     <url>https://wiki.jenkins-ci.org/display/JENKINS/GitHub+pull+request+builder+plugin</url>
@@ -20,6 +20,11 @@
             <id>janinko</id>
             <name>Honza Brázdil</name>
             <email>jbrazdil@redhat.com</email>
+        </developer>
+        <developer>
+            <id>rchrom</id>
+            <name>Radek Chromy</name>
+            <email>radek.chromy@gooddata.com</email>
         </developer>
     </developers>
 
@@ -42,12 +47,12 @@
         <dependency>
             <groupId>com.coravy.hudson.plugins.github</groupId>
             <artifactId>github</artifactId>
-            <version>1.5</version>
+            <version>1.8</version>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>github-api</artifactId>
-            <version>1.42</version>
+            <version>1.44</version>
         </dependency>
     </dependencies>
 
