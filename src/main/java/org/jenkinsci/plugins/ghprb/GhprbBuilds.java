@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 import org.kohsuke.github.GHCommitState;
 import org.kohsuke.github.GHIssueState;
 import org.kohsuke.github.GHPullRequest;
-
+import org.jenkinsci.plugins.ghprb.GhprbCause;
 /**
  * @author janinko
  */

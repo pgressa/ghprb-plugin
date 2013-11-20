@@ -37,9 +37,6 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public final class GhprbTrigger extends Trigger<AbstractProject<?, ?>> {
 	private static final Logger logger = Logger.getLogger(GhprbTrigger.class.getName());
-	private final String adminlist;
-	private       String whitelist;
-	private final String orgslist;
 	private final String cron;
 	private final String triggerPhrase;
 	private final Boolean onlyTriggerPhrase;
@@ -50,12 +47,9 @@ public final class GhprbTrigger extends Trigger<AbstractProject<?, ?>> {
 	transient private Ghprb ml;
 
 	@DataBoundConstructor
-	public GhprbTrigger(String adminlist, String whitelist, String orgslist, String cron, String triggerPhrase,
+	public GhprbTrigger(String cron, String triggerPhrase,
 			Boolean onlyTriggerPhrase, Boolean useGitHubHooks, Boolean permitAll, Boolean autoCloseFailedPullRequests) throws ANTLRException{
 		super(cron);
-		this.adminlist = adminlist;
-		this.whitelist = whitelist;
-		this.orgslist = orgslist;
 		this.cron = cron;
 		this.triggerPhrase = triggerPhrase;
 		this.onlyTriggerPhrase = onlyTriggerPhrase;
@@ -107,6 +101,10 @@ public final class GhprbTrigger extends Trigger<AbstractProject<?, ?>> {
 		values.add(new StringParameterValue("ghprbActualCommit",cause.getCommit()));
 		values.add(new StringParameterValue("ghprbPullId",String.valueOf(cause.getPullID())));
 		values.add(new StringParameterValue("ghprbTargetBranch",String.valueOf(cause.getTargetBranch())));
+		// Backward compatibility (GD) 
+		values.add(new StringParameterValue("pull_id",String.valueOf(cause.getPullID())));
+		values.add(new StringParameterValue("base_branch",String.valueOf(cause.getTargetBranch())));
+		//
 		// it's possible the GHUser doesn't have an associated email address
 		values.add(new StringParameterValue("ghprbPullAuthorEmail",cause.getAuthorEmail() != null ? cause.getAuthorEmail() : ""));
 
@@ -131,36 +129,6 @@ public final class GhprbTrigger extends Trigger<AbstractProject<?, ?>> {
 		if (ml == null) return;
 		ml.run();
 		DESCRIPTOR.save();
-	}
-
-	public void addWhitelist(String author){
-		whitelist = whitelist + " " + author;
-		try {
-			this.job.save();
-		} catch (IOException ex) {
-			logger.log(Level.SEVERE, "Failed to save new whitelist", ex);
-		}
-	}
-
-	public String getAdminlist() {
-		if(adminlist == null){
-			return "";
-		}
-		return adminlist;
-	}
-
-	public String getWhitelist() {
-		if(whitelist == null){
-			return "";
-		}
-		return whitelist;
-	}
-
-	public String getOrgslist() {
-		if(orgslist == null){
-			return "";
-		}
-		return orgslist;
 	}
 
 	public String getCron() {
@@ -218,12 +186,8 @@ public final class GhprbTrigger extends Trigger<AbstractProject<?, ?>> {
 		private String username;
 		private String password;
 		private String accessToken;
-		private String adminlist;
 		private String publishedURL;
-		private String requestForTestingPhrase;
-		private String whitelistPhrase = ".*add\\W+to\\W+whitelist.*";
 		private String okToTestPhrase = ".*ok\\W+to\\W+test.*";
-		private String retestPhrase = ".*test\\W+this\\W+please.*";
 		private String cron = "*/5 * * * *";
 		private Boolean useComments = false;
 		private String unstableAs = GHCommitState.FAILURE.name();
@@ -259,12 +223,8 @@ public final class GhprbTrigger extends Trigger<AbstractProject<?, ?>> {
 			username = formData.getString("username");
 			password = formData.getString("password");
 			accessToken = formData.getString("accessToken");
-			adminlist = formData.getString("adminlist");
 			publishedURL = formData.getString("publishedURL");
-			requestForTestingPhrase = formData.getString("requestForTestingPhrase");
-			whitelistPhrase = formData.getString("whitelistPhrase");
 			okToTestPhrase = formData.getString("okToTestPhrase");
-			retestPhrase = formData.getString("retestPhrase");
 			cron = formData.getString("cron");
 			useComments = formData.getBoolean("useComments");
 			unstableAs = formData.getString("unstableAs");
@@ -274,16 +234,6 @@ public final class GhprbTrigger extends Trigger<AbstractProject<?, ?>> {
 			save();
 			gh = new GhprbGitHub();
 			return super.configure(req,formData);
-		}
-
-		// GitHub username may only contain alphanumeric characters or dashes and cannot begin with a dash
-		private static final Pattern adminlistPattern = Pattern.compile("((\\p{Alnum}[\\p{Alnum}-]*)|\\s)*");
-		public FormValidation doCheckAdminlist(@QueryParameter String value)
-				throws ServletException {
-			if(!adminlistPattern.matcher(value).matches()){
-				return FormValidation.error("GitHub username may only contain alphanumeric characters or dashes and cannot begin with a dash. Separate them with whitespece.");
-			}
-			return FormValidation.ok();
 		}
 
 		public FormValidation doCheckCron(@QueryParameter String value){
@@ -308,28 +258,12 @@ public final class GhprbTrigger extends Trigger<AbstractProject<?, ?>> {
 			return accessToken;
 		}
 
-		public String getAdminlist() {
-			return adminlist;
-		}
-
 		public String getPublishedURL() {
 			return publishedURL;
 		}
 
-		public String getRequestForTestingPhrase() {
-			return requestForTestingPhrase;
-		}
-
-		public String getWhitelistPhrase() {
-			return whitelistPhrase;
-		}
-
 		public String getOkToTestPhrase() {
 			return okToTestPhrase;
-		}
-
-		public String getRetestPhrase() {
-			return retestPhrase;
 		}
 
 		public String getCron() {

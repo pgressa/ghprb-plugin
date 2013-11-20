@@ -44,13 +44,8 @@ public class GhprbPullRequest{
 		this.ml = helper;
 		this.repo = repo;
 
-		if(helper.isWhitelisted(author)){
-			accepted = true;
-			shouldRun = true;
-		}else{
-			logger.log(Level.INFO, "Author of #{0} {1} on {2} not in whitelist!", new Object[]{id, author, reponame});
-			repo.addComment(id, GhprbTrigger.getDscp().getRequestForTestingPhrase());
-		}
+		accepted = true;
+		shouldRun = true;
 
 		logger.log(Level.INFO, "Created pull request #{0} on {1} by {2} ({3}) updated at: {4} SHA: {5}", new Object[]{id, reponame, author, authorEmail, updated, head});
 	}
@@ -143,39 +138,16 @@ public class GhprbPullRequest{
 		String sender = comment.getUser().getLogin();
 		String body = comment.getBody();
 
-		// add to whitelist
-		if (ml.isWhitelistPhrase(body) && ml.isAdmin(sender)){
-			if(!ml.isWhitelisted(author)) {
-				ml.addWhitelist(author);
-			}
-			accepted = true;
-			shouldRun = true;
-		}
-
 		// ok to test
-		if(ml.isOktotestPhrase(body) && ml.isAdmin(sender)){
+		if(ml.isOktotestPhrase(body)){
 			accepted = true;
 			shouldRun = true;
-		}
-
-		// test this please
-		if (ml.isRetestPhrase(body)){
-			if(ml.isAdmin(sender)){
-				shouldRun = true;
-			}else if(accepted && ml.isWhitelisted(sender) ){
-				shouldRun = true;
-			}
 		}
 
 		// trigger phrase
 		if (ml.isTriggerPhrase(body)){
-			if(ml.isAdmin(sender)){
-				shouldRun = true;
-				triggered = true;
-			}else if(accepted && ml.isWhitelisted(sender) ){
-				shouldRun = true;
-				triggered = true;
-			}
+			shouldRun = true;
+			triggered = true;
 		}
 	}
 
