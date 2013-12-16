@@ -1,3 +1,7 @@
+# GoodData customized Pull Request Builder Plugin
+
+This is fork of Pull Request Builder Plugin with customized behaviour.
+
 This plugin builds pull requests from github and reports the results.
 
 https://wiki.jenkins-ci.org/display/JENKINS/GitHub+pull+request+builder+plugin
