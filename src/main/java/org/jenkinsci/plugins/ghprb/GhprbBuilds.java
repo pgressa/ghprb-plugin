@@ -79,7 +79,11 @@ public class GhprbBuilds {
 		} else {
 			state = GHCommitState.FAILURE;
 		}
+		try {
 		repo.createCommitStatus(build, state, (c.isMerged() ? "Merged build finished." : "Build finished."),c.getPullID() );
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "Can't update commit status." + state + "", e);
+		}
 
 		String publishedURL = GhprbTrigger.getDscp().getPublishedURL();
 		if (publishedURL != null && !publishedURL.isEmpty()) {

@@ -113,17 +113,23 @@ public class GhprbRepository {
 	}
 
 	public void createCommitStatus(String sha1, GHCommitState state, String url, String message, int id) {
-		logger.log(Level.INFO, "Setting status of {0} to {1} with url {2} and message: {3}", new Object[]{sha1, state, url, message});
+		logger.log(Level.FINE, "CreateCommitStatus started.");
 		try {
+			logger.log(Level.INFO, "PRE: Setting status of {0} to {1} with url {2} and message: {3}", new Object[]{sha1, state, url, message});
 			repo.createCommitStatus(sha1, state, url, message);
+			logger.log(Level.INFO, "POST: Setting status of {0} to {1} with url {2} and message: {3}", new Object[]{sha1, state, url, message});
 		} catch (IOException ex) {
 			if(GhprbTrigger.getDscp().getUseComments()){
-				logger.log(Level.INFO, "Could not update commit status of the Pull Request on GitHub. Trying to send comment.", ex);
+				logger.log(Level.INFO, "PRE: Could not update commit status of the Pull Request on GitHub. Trying to send comment.", ex);
 				addComment(id, message);
+				logger.log(Level.INFO, "POST: Could not update commit status of the Pull Request on GitHub. Trying to send comment.", ex);
 			}else{
 				logger.log(Level.SEVERE, "Could not update commit status of the Pull Request on GitHub.", ex);
 			}
+		} catch (Exception ex) {
+			logger.log(Level.SEVERE, "New Exception reached (createCommitStatus).", ex);
 		}
+		logger.log(Level.FINE, "CreateCommitStatus finished.");
 	}
 
 	public String getName() {
@@ -135,6 +141,8 @@ public class GhprbRepository {
 			repo.getPullRequest(id).comment(comment);
 		} catch (IOException ex) {
 			logger.log(Level.SEVERE, "Couldn't add comment to pull request #" + id + ": '" + comment + "'", ex);
+		} catch (Exception ex) {
+			logger.log(Level.SEVERE, "New Exception reached (addComment).", ex);
 		}
 	}
 
@@ -143,6 +151,8 @@ public class GhprbRepository {
 			repo.getPullRequest(id).close();
 		} catch (IOException ex) {
 			logger.log(Level.SEVERE, "Couldn't close the pull request #" + id + ": '", ex);
+		} catch (Exception ex) {
+			logger.log(Level.SEVERE, "New Exception reached (closePullRequest).", ex);
 		}
 	}
 
