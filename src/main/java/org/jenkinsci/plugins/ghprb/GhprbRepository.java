@@ -54,7 +54,7 @@ public class GhprbRepository {
 			try {
 				repo = ml.getGitHub().get().getRepository(reponame);
 			} catch (IOException ex) {
-				logger.log(Level.SEVERE, "Could not retrieve repo named " + reponame + " (Do you have properly set 'GitHub project' field in job configuration?)", ex);
+				logger.log(Level.SEVERE, "Could not retrieve repo named {}. (Do you have properly set 'GitHub project' field in job configuration?): {}", new Object[]{reponame, ex});
 				return false;
 			}
 		}
@@ -66,7 +66,13 @@ public class GhprbRepository {
 
 		List<GHPullRequest> prs;
 		try {
+			if(logger.isLoggable(Level.INFO)){
+				logger.log(Level.INFO, "Getting all open pull requests for repo '{}' ", repo.getName());
+			}
 			prs = repo.getPullRequests(GHIssueState.OPEN);
+			if(logger.isLoggable(Level.INFO)){
+				logger.log(Level.INFO, "Got '{}' open pull requests.",prs.size());
+			}
 		} catch (IOException ex) {
 			logger.log(Level.SEVERE, "Could not retrieve pull requests.", ex);
 			return;
@@ -75,9 +81,15 @@ public class GhprbRepository {
 
 		for(GHPullRequest pr : prs){
 			if(pr.getHead() == null) try {
+				if(logger.isLoggable(Level.INFO)){
+					logger.log(Level.INFO, "Getting pull request for repo: {} with number: {}.", new Object[]{repo.getName(), pr.getNumber()});
+				}
 				pr = repo.getPullRequest(pr.getNumber());
+				if(logger.isLoggable(Level.INFO)){
+					logger.log(Level.INFO, "Got: {}", pr.getTitle());
+				}
 			} catch (IOException ex) {
-				Logger.getLogger(GhprbRepository.class.getName()).log(Level.SEVERE, "Could not retrieve pr " + pr.getNumber(), ex);
+				logger.log(Level.SEVERE, "Could not retrieve pr {}: {}", new Object[]{pr.getNumber(), ex});
 				return;
 			}
 			check(pr);
@@ -113,23 +125,35 @@ public class GhprbRepository {
 	}
 
 	public void createCommitStatus(String sha1, GHCommitState state, String url, String message, int id) {
-		logger.log(Level.FINE, "CreateCommitStatus started.");
+		if(logger.isLoggable(Level.INFO)){
+			logger.log(Level.INFO, "CreateCommitStatus started.");
+		}
 		try {
-			logger.log(Level.INFO, "PRE: Setting status of {0} to {1} with url {2} and message: {3}", new Object[]{sha1, state, url, message});
+			if(logger.isLoggable(Level.INFO)){
+				logger.log(Level.INFO, "PRE: Setting status of {} to {} with url {} and message: {}", new Object[]{sha1, state, url, message});
+			}
 			repo.createCommitStatus(sha1, state, url, message);
-			logger.log(Level.INFO, "POST: Setting status of {0} to {1} with url {2} and message: {3}", new Object[]{sha1, state, url, message});
+			if(logger.isLoggable(Level.INFO)){
+				logger.log(Level.INFO, "POST: Setting status of {} to {} with url {} and message: {}", new Object[]{sha1, state, url, message});
+			}
 		} catch (IOException ex) {
 			if(GhprbTrigger.getDscp().getUseComments()){
-				logger.log(Level.INFO, "PRE: Could not update commit status of the Pull Request on GitHub. Trying to send comment.", ex);
+				if(logger.isLoggable(Level.INFO)){
+					logger.log(Level.INFO, "PRE: Could not update commit status of the Pull Request on GitHub. Trying to send comment.");
+				}
 				addComment(id, message);
-				logger.log(Level.INFO, "POST: Could not update commit status of the Pull Request on GitHub. Trying to send comment.", ex);
+				if(logger.isLoggable(Level.INFO)){
+					logger.log(Level.INFO, "POST: Could not update commit status of the Pull Request on GitHub. Trying to send comment.");
+				}
 			}else{
 				logger.log(Level.SEVERE, "Could not update commit status of the Pull Request on GitHub.", ex);
 			}
 		} catch (Exception ex) {
 			logger.log(Level.SEVERE, "New Exception reached (createCommitStatus).", ex);
 		}
-		logger.log(Level.FINE, "CreateCommitStatus finished.");
+		if(logger.isLoggable(Level.INFO)){
+			logger.log(Level.INFO, "CreateCommitStatus finished.");
+		}
 	}
 
 	public String getName() {
@@ -140,7 +164,7 @@ public class GhprbRepository {
 		try {
 			repo.getPullRequest(id).comment(comment);
 		} catch (IOException ex) {
-			logger.log(Level.SEVERE, "Couldn't add comment to pull request #" + id + ": '" + comment + "'", ex);
+			logger.log(Level.SEVERE, "Couldn't add comment to pull request #{}: {}:", new Object[]{id, comment, ex});
 		} catch (Exception ex) {
 			logger.log(Level.SEVERE, "New Exception reached (addComment).", ex);
 		}
@@ -150,7 +174,7 @@ public class GhprbRepository {
 		try {
 			repo.getPullRequest(id).close();
 		} catch (IOException ex) {
-			logger.log(Level.SEVERE, "Couldn't close the pull request #" + id + ": '", ex);
+			logger.log(Level.SEVERE, "Couldn't close the pull request #{}: {}", new Object[]{id, ex});
 		} catch (Exception ex) {
 			logger.log(Level.SEVERE, "New Exception reached (closePullRequest).", ex);
 		}
@@ -175,8 +199,7 @@ public class GhprbRepository {
 
 	public boolean createHook(){
 		if (repo == null) {
-			logger.log(Level.INFO, "Repository not available, cannot set pull request hook for repository " +
-					reponame);
+			logger.log(Level.INFO, "Repository not available, cannot set pull request hook for repository {}", reponame);
 			return false;
 		}
 		try {
@@ -189,10 +212,7 @@ public class GhprbRepository {
 		}catch(IOException ex){
 			logger.log(
 					Level.SEVERE,
-					"Couldn't create web hook for repository "+
-					reponame+
-					". Does the user (from global configuration) have admin rights to the repository?",
-					ex);
+					"Couldn't create web hook for repository '{}'. Does the user (from global configuration) have admin rights to the repository? {}", new Object[]{reponame, ex});
 			return false;
 		}
 	}
@@ -206,14 +226,14 @@ public class GhprbRepository {
 		if(logger.isLoggable(Level.FINER)){
 			logger.log(
 					Level.FINER,
-					"Comment on issue #{0}: '{1}'",
+					"Comment on issue #{}: '{}'",
 					new Object[]{id,issueComment.getComment().getBody()});
 		}
 		if(!"created".equals(issueComment.getAction())) return;
 		GhprbPullRequest pull = pulls.get(id);
 		if(pull == null){
 			if(logger.isLoggable(Level.FINER)){
-				logger.log(Level.FINER, "Pull request #{0} desn't exist", id);
+				logger.log(Level.FINER, "Pull request #{} desn't exist", id);
 			}
 			return;
 		}
@@ -232,14 +252,14 @@ public class GhprbRepository {
 		}else if("synchronize".equals(pr.getAction())){
 			GhprbPullRequest pull = pulls.get(pr.getNumber());
 			if(pull == null){
-				logger.log(Level.SEVERE, "Pull Request #{0} doesn't exist", pr.getNumber());
+				logger.log(Level.SEVERE, "Pull Request #{} doesn't exist", pr.getNumber());
 				return;
 			}
 			pull.check(pr.getPullRequest());
 		}else if("closed".equals(pr.getAction())){
 			pulls.remove(pr.getNumber());
 		}else{
-			logger.log(Level.WARNING, "Unknown Pull Request hook action: {0}", pr.getAction());
+			logger.log(Level.WARNING, "Unknown Pull Request hook action: {}", pr.getAction());
 		}
 		GhprbTrigger.getDscp().save();
 	}
