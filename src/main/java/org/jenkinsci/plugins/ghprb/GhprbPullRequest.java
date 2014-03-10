@@ -47,7 +47,7 @@ public class GhprbPullRequest{
 		accepted = true;
 		shouldRun = true;
 
-        obtainAuthorEmail(pr);
+		obtainAuthorEmail(pr);
 		logger.log(Level.INFO, "Created pull request #{0} on {1} by {2} ({3}) updated at: {4} SHA: {5}", new Object[]{id, reponame, author.getLogin(), authorEmail, updated, head});
 	}
 
@@ -129,7 +129,7 @@ public class GhprbPullRequest{
 
 		repo.createCommitStatus(head, GHCommitState.PENDING, null, message,id);
 
-		logger.log(Level.INFO, message);
+		logger.log(Level.INFO, "Build scheduled with message: {0}, for repository: {1} pr: {2}, author: {3}, title: {4}",new Object[]{message,reponame,id,author.getLogin(),title});
 	}
 
 	// returns false if no new commit
@@ -200,7 +200,7 @@ public class GhprbPullRequest{
 		try {
 			authorEmail = pr.getUser().getEmail();
 		}catch (NullPointerException e) {
-			logger.log(Level.INFO, "Email of {0} can't be loaded "+pr.getUser().getLogin(), e);
+			logger.log(Level.INFO, "Email can't be loaded for:"+pr.getUser().getLogin(), e);
 		}catch (Exception e) {
 			logger.log(Level.WARNING, "Couldn't obtain author email.", e);
 		}

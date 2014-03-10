@@ -95,24 +95,6 @@ public class GhprbRootAction implements UnprotectedRootAction {
 	}
 
 	private Set<GhprbRepository> getRepos(String repo){
-		HashSet<GhprbRepository> ret = new HashSet<GhprbRepository>();
-
-		// We need this to get access to list of repositories
-		Authentication old = SecurityContextHolder.getContext().getAuthentication();
-		SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
-
-		try{
-			for(AbstractProject<?,?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)){
-				GhprbTrigger trigger = job.getTrigger(GhprbTrigger.class);
-				if (trigger == null || trigger.getGhprb() == null) continue;
-				GhprbRepository r = trigger.getGhprb().getRepository();
-				if(repo.equals(r.getName())){
-					ret.add(r);
-				}
-			}
-		}finally{
-			SecurityContextHolder.getContext().setAuthentication(old);
-		}
-		return ret;
+		return GhprbRepositoryCache.get().getRepoSet(repo);
 	}
 }

@@ -44,7 +44,9 @@ public class GhprbBuilds {
 
 		QueueTaskFuture<?> build = trigger.startJob(cause);
 		if(build == null){
-			logger.log(Level.SEVERE, "Job did not start");
+			logger.log(Level.SEVERE, "Failed to trigger build by the cause: {0}",cause.getShortDescription());
+		}else{
+			logger.log(Level.INFO, "Cause has been triggered for: {0}",cause.getShortDescription());
 		}
 		return sb.toString();
 	}
