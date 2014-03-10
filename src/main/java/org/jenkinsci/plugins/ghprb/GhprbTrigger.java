@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -227,7 +228,7 @@ public final class GhprbTrigger extends Trigger<AbstractProject<?, ?>> {
 		public DescriptorImpl(){
 			load();
 			if(jobs == null){
-				jobs = new HashMap<String, Map<Integer,GhprbPullRequest>>();
+				jobs = new ConcurrentHashMap<String, Map<Integer,GhprbPullRequest>>();
 			}
 		}
 
@@ -343,7 +344,7 @@ public final class GhprbTrigger extends Trigger<AbstractProject<?, ?>> {
 			if(jobs.containsKey(projectName)){
 				 ret = jobs.get(projectName);
 			}else{
-				ret = new HashMap<Integer, GhprbPullRequest>();
+				ret = new ConcurrentHashMap<Integer, GhprbPullRequest>();
 				jobs.put(projectName, ret);
 			}
 			return ret;
