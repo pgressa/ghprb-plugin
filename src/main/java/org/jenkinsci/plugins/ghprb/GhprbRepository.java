@@ -190,6 +190,7 @@ public class GhprbRepository {
 	}
 
 	void onIssueCommentHook(IssueComment issueComment) throws IOException {
+		logger.log(Level.INFO,"Repository: {0}; Issue comment: {1}; Action: {2}", new Object[]{ reponame,issueComment.getComment(),issueComment.getAction()});
 		int id = issueComment.getIssue().getNumber();
 		if(logger.isLoggable(Level.FINER)){
 			logger.log(
@@ -210,6 +211,7 @@ public class GhprbRepository {
 	}
 
 	void onPullRequestHook(PullRequest pr) {
+		logger.log(Level.INFO,"Repository: {0}; Pull request: {1}; Action: {2}", new Object[]{reponame,pr.getNumber(),pr.getAction()});
 		if("opened".equals(pr.getAction()) || "reopened".equals(pr.getAction())){
 			GhprbPullRequest pull = pulls.get(pr.getNumber());
 			if(pull == null){
@@ -225,6 +227,7 @@ public class GhprbRepository {
 			}
 			pull.check(pr.getPullRequest());
 		}else if("closed".equals(pr.getAction())){
+			logger.log(Level.INFO,"Removin - Repository: {0}; Pull request: {1}; Action: {2}", new Object[]{reponame,pr.getNumber(),pr.getAction()});
 			pulls.remove(pr.getNumber());
 		}else{
 			logger.log(Level.WARNING, "Unknown Pull Request hook action: {0}", pr.getAction());

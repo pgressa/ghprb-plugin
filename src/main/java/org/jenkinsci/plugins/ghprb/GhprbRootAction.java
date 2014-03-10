@@ -18,6 +18,8 @@ import org.kohsuke.github.GHRepository;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * @author Honza Brázdil <jbrazdil@redhat.com>
  */
@@ -40,6 +42,7 @@ public class GhprbRootAction implements UnprotectedRootAction {
 
 	public void doIndex(StaplerRequest req, StaplerResponse resp) {
 		String event = req.getHeader("X-GitHub-Event");
+		String delivery = req.getHeader("X-GitHub-Delivery");
 		String payload = req.getParameter("payload");
 		if(payload == null){
 			logger.log(Level.SEVERE, "Request doesn't contain payload.");
@@ -48,16 +51,18 @@ public class GhprbRootAction implements UnprotectedRootAction {
 
 		GhprbGitHub gh = GhprbTrigger.getDscp().getGitHub();
 
-		logger.log(Level.INFO, "Got payload event: {0}", event);
+		logger.log(Level.INFO, "Got payload event: {0}; delivery: {1}", new Object[]{event,delivery});
 		try{
 			if("issue_comment".equals(event)){
 				GHEventPayload.IssueComment issueComment = gh.get().parseEventPayload(new StringReader(payload), GHEventPayload.IssueComment.class);
 				for(GhprbRepository repo : getRepos(issueComment.getRepository())){
+					logger.log(Level.INFO, "Payload: {0} for {1}",new Object[]{event,repo.getRepoUrl()});
 					repo.onIssueCommentHook(issueComment);
 				}
 			}else if("pull_request".equals(event)) {
 				GHEventPayload.PullRequest pr = gh.get().parseEventPayload(new StringReader(payload), GHEventPayload.PullRequest.class);
 				for(GhprbRepository repo : getRepos(pr.getPullRequest().getRepository())){
+					logger.log(Level.INFO, "Payload: {0} for {1}",new Object[]{event,repo.getRepoUrl()});
 					repo.onPullRequestHook(pr);
 				}
 			}else{
@@ -92,7 +97,7 @@ public class GhprbRootAction implements UnprotectedRootAction {
 
 		// We need this to get access to list of repositories
 		Authentication old = SecurityContextHolder.getContext().getAuthentication();
-        SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+		SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
 
 		try{
 			for(AbstractProject<?,?> job : Jenkins.getInstance().getAllItems(AbstractProject.class)){

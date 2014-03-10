@@ -40,7 +40,6 @@ public class GhprbPullRequest{
 		author = pr.getUser();
 		reponame = repo.getName();
 		target = pr.getBase().getRef();
-		obtainAuthorEmail(pr);
 
 		this.ml = helper;
 		this.repo = repo;
@@ -48,6 +47,7 @@ public class GhprbPullRequest{
 		accepted = true;
 		shouldRun = true;
 
+        obtainAuthorEmail(pr);
 		logger.log(Level.INFO, "Created pull request #{0} on {1} by {2} ({3}) updated at: {4} SHA: {5}", new Object[]{id, reponame, author.getLogin(), authorEmail, updated, head});
 	}
 
@@ -76,6 +76,8 @@ public class GhprbPullRequest{
 				logger.log(Level.INFO, "Pull request was updated on repo {0} but there aren't any new comments nor commits - that may mean that commit status was updated.", reponame);
 			}
 			updated = pr.getUpdatedAt();
+		}else{
+			logger.log(Level.INFO, "Pull request builder: pr #{0} was NOT updated on {1} at {2} by {3}", new Object[]{id, reponame, updated, author});
 		}
 
 		checkMergeable(pr);
@@ -90,17 +92,16 @@ public class GhprbPullRequest{
 			logger.log(Level.SEVERE, "Couldn't check comment #" + comment.getId(), ex);
 			return;
 		}
+		GHPullRequest pr = null;
+		try{
+			pr = repo.getPullRequest(id);
+		} catch (IOException e){
+			logger.log(Level.SEVERE, "Couldn't get GHPullRequest for checking mergeable state");
+		}
 
-                GHPullRequest pr = null;
-                try{
-                        pr = repo.getPullRequest(id);
-                } catch (IOException e){
-                        logger.log(Level.SEVERE, "Couldn't get GHPullRequest for checking mergeable state");
-                }
-                if (pr != null){
-                        checkMergeable(pr);
-                }
-
+		if (pr != null){
+			checkMergeable(pr);
+		}
 		tryBuild();
 	}
 
@@ -194,11 +195,13 @@ public class GhprbPullRequest{
 			logger.log(Level.SEVERE, "Couldn't obtain mergeable status.", e);
 		}
 	}
-	
+
 	private void obtainAuthorEmail(GHPullRequest pr) {
 		try {
 			authorEmail = pr.getUser().getEmail();
-		} catch (Exception e) {
+		}catch (NullPointerException e) {
+			logger.log(Level.INFO, "Email of {0} can't be loaded "+pr.getUser().getLogin(), e);
+		}catch (Exception e) {
 			logger.log(Level.WARNING, "Couldn't obtain author email.", e);
 		}
 	}

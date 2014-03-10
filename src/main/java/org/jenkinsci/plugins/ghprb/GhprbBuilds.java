@@ -97,6 +97,7 @@ public class GhprbBuilds {
 		} else {
 			state = GHCommitState.FAILURE;
 		}
+		logger.log(Level.INFO,"State: {0}; {1}",new Object[]{state,(c.isMerged() ? "Merged build finished." : "Build finished.")});
 		repo.createCommitStatus(build, state, (c.isMerged() ? "Merged build finished." : "Build finished."),c.getPullID() );
 
 		String publishedURL = GhprbTrigger.getDscp().getPublishedURL();
