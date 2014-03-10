@@ -68,8 +68,10 @@ public class GhprbRootAction implements UnprotectedRootAction {
 			}else{
 				logger.log(Level.WARNING, "Request not known");
 			}
+			resp.setStatus(HttpServletResponse.SC_OK);
 		}catch(IOException ex){
 			logger.log(Level.SEVERE, "Failed to parse github hook payload.", ex);
+			resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}
 	}
 
