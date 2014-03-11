@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -211,13 +212,13 @@ public final class GhprbTrigger extends Trigger<AbstractProject<?, ?>> {
 		private String accessToken;
 		private String publishedURL;
 		private String okToTestPhrase = ".*ok\\W+to\\W+test.*";
-		private String cron = "*/5 * * * *";
+		private String cron = "*/30 * * * *";
 		private Boolean useComments = false;
 		private int logExcerptLines = 0;
 		private String unstableAs = GHCommitState.FAILURE.name();
 		private Boolean autoCloseFailedPullRequests = false;
-		private String msgSuccess = "Test PASSed.";
-		private String msgFailure = "Test FAILed.";
+		private String msgSuccess = "Test PASSED.";
+		private String msgFailure = "Test FAILED.";
 
 		private transient GhprbGitHub gh;
 
@@ -227,7 +228,7 @@ public final class GhprbTrigger extends Trigger<AbstractProject<?, ?>> {
 		public DescriptorImpl(){
 			load();
 			if(jobs == null){
-				jobs = new HashMap<String, Map<Integer,GhprbPullRequest>>();
+				jobs = new ConcurrentHashMap<String, Map<Integer,GhprbPullRequest>>();
 			}
 		}
 
@@ -315,14 +316,14 @@ public final class GhprbTrigger extends Trigger<AbstractProject<?, ?>> {
 
 		public String getMsgSuccess() {
 			if(msgSuccess == null){
-				return "Test PASSed.";
+				return "Test PASSED.";
 			}
 			return msgSuccess;
 		}
 
 		public String getMsgFailure() {
 			if(msgFailure == null){
-				return "Test FAILed.";
+				return "Test FAILED.";
 			}
 			return msgFailure;
 		}
@@ -343,7 +344,7 @@ public final class GhprbTrigger extends Trigger<AbstractProject<?, ?>> {
 			if(jobs.containsKey(projectName)){
 				 ret = jobs.get(projectName);
 			}else{
-				ret = new HashMap<Integer, GhprbPullRequest>();
+				ret = new ConcurrentHashMap<Integer, GhprbPullRequest>();
 				jobs.put(projectName, ret);
 			}
 			return ret;
