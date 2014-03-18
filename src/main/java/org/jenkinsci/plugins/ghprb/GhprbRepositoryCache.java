@@ -59,9 +59,15 @@ public class GhprbRepositoryCache {
 	}
 
 	public synchronized Set<GhprbRepository> getRepoSet(String repoName){
-		Map<String,GhprbRepository> map = repoCache.get(repoName);
-		logger.log(Level.INFO,"For {0} {1} has been found",new Object[]{repoName,map.size()});
-		return map == null ? Collections.<GhprbRepository>emptySet() : ImmutableSet.copyOf(map.values());
+		Set<GhprbRepository> set = null;
+		if(repoCache.containsKey(repoName)){
+			Map<String,GhprbRepository> map = repoCache.get(repoName);
+			set = ImmutableSet.copyOf(map.values());
+		}else{
+			set = Collections.<GhprbRepository>emptySet();
+		}
+		logger.log(Level.INFO,"For {0} {1} has been found",new Object[]{repoName,set.size()});
+		return set;
 	}
 
 	public synchronized void removeProject(AbstractProject project, String jobName){
