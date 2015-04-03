@@ -114,6 +114,7 @@ public class GhprbRepository {
 
 	public void createCommitStatus(String sha1, GHCommitState state, String url, String message, int id) {
 		logger.log(Level.INFO, "Setting status of {0} to {1} with url {2} and message: {3}", new Object[]{sha1, state, url, message});
+		if(!checkState()) return;
 		try {
 			repo.createCommitStatus(sha1, state, url, message);
 		} catch (IOException ex) {
@@ -133,6 +134,7 @@ public class GhprbRepository {
 	public void addComment(int id, String comment) {
 		if (comment.isEmpty())
 			return;
+		if(!checkState()) return;
 		try {
 			repo.getPullRequest(id).comment(comment);
 		} catch (IOException ex) {
@@ -141,6 +143,7 @@ public class GhprbRepository {
 	}
 
 	public void closePullRequest(int id) {
+		if(!checkState()) return;
 		try {
 			repo.getPullRequest(id).close();
 		} catch (IOException ex) {
